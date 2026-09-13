@@ -11,13 +11,25 @@ import asyncio
 from pathlib import Path
 
 from dotenv import load_dotenv
+# محلياً (على جهازك): نقرأ القيم من ملف .env إذا كان موجود.
+# على سيرفر سحابي مثل Railway: القيم تكون محطوطة مباشرة كمتغيرات بيئة
+# (Environment Variables) من لوحة التحكم، وما راح يكون فيه ملف .env فعلي
+# على السيرفر - وهذا طبيعي وصحيح أمنياً، مو خطأ.
 ENV_PATH = Path(__file__).resolve().parent / ".env"
-if not ENV_PATH.exists():
+if ENV_PATH.exists():
+    load_dotenv(ENV_PATH)
+
+# نتحقق هسه من المتغيرات الأساسية اللي لازم تكون موجودة بأي طريقة
+# (من ملف .env محلياً، أو من إعدادات Variables بالسيرفر السحابي).
+_REQUIRED_ENV_VARS = ["JWT_SECRET", "ADMIN_EMAIL"]
+_missing = [name for name in _REQUIRED_ENV_VARS if not os.getenv(name)]
+if _missing:
     raise RuntimeError(
-        f"ملف .env غير موجود بالمسار المتوقع: {ENV_PATH}\n"
-        f"انسخ .env.example وسمه .env وحط فيه القيم الحقيقية."
+        "المتغيرات التالية ناقصة ولازم تنحط قبل التشغيل: "
+        + ", ".join(_missing)
+        + "\nمحلياً: حطها بملف .env جنب main.py."
+        + "\nعلى Railway/سيرفر سحابي: حطها بقسم Variables بلوحة التحكم."
     )
-load_dotenv(ENV_PATH)
 
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
