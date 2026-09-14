@@ -74,6 +74,7 @@ class GoldLivePriceFeed:
 
     async def start(self, api_key: Optional[str] = None):
         self.client = GoldPriceClient(api_key)
+        await self.client.__aenter__()  # يفتح اتصال httpx الداخلي فعلياً - بدونها يضل "client is not open"
         await self.backfill_all()
         self._stop = False
         self._tasks.append(asyncio.create_task(self._spot_loop()))
